@@ -56,18 +56,19 @@ impl Build {
     build!(options, get, post, put, delete, head, trace, connect, patch);
 }
 
-impl hyper::service::Service for Router {
+impl Service for Router {
     type ReqBody = Body;
     type ResBody = Body;
     type Error = failure::Error;
-    type Future = ();
+    type Future = Box<dyn hyper::rt::Future<Item = Response<Body>, Error = Self::Error>>;
 
     fn call(&mut self, req: Request<Self::ReqBody>) -> Self::Future {
         let path = req.uri().path();
         if let Some((handler, params)) = self.lookup(req.method(), path) {
+            let params = params.into_iter().map(str::to_string).collect();
             handler(req, params)
         } else {
-            let mut response = Response::builder()
+            let response = Response::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body(Body::empty())
                 .map_err(Error::from);

@@ -3,11 +3,14 @@ name = "pathmaker"
 version = "0.1.0"
 authors = ["Jeremy Rodi <me@retroc.at>"]
 edition = "2018"
+description = "a bare-bones http router"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["hyper"]
+default = ["with-hyper"]
+with-hyper = ["hyper", "futures"]
 
 [dependencies]
 regex = "1.3.1"
@@ -15,5 +18,5 @@ lazy_static = "1.4.0"
 phf = { version = "0.8.0", features = ["macros"] }
 failure = "0.1.6"
 percent-encoding = "2.1.0"
-hyper = { version = "*", optional = true }
-futures = { version = "*", optional = true }
+hyper = { version = "^0.12", optional = true }
+futures = { version = "^0.1", optional = true }

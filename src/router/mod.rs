@@ -13,12 +13,12 @@ pub struct Router<Method, Handler> {
     default: Option<Handler>,
 }
 
-impl<M: Eq, T> Router<M, T> {
-    pub fn build() -> Build<M, T> {
+impl<M: Eq, H> Router<M, H> {
+    pub fn build() -> Build<M, H> {
         Build::default()
     }
 
-    pub fn lookup<'s, 'p>(&'s self, method: &'_ M, path: &'p str) -> Option<(&'s T, Vec<&'p str>)> {
+    pub fn lookup<'s, 'p>(&'s self, method: &'_ M, path: &'p str) -> Option<(&'s H, Vec<&'p str>)> {
         self.set
             .matches(path)
             .iter()
