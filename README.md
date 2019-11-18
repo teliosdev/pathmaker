@@ -26,33 +26,33 @@ extern crate pathmaker;
 extern crate failure;
 extern crate futures;
 
-use hyper::{Request, Response, Method, Body};
+use hyper::{Request, Response, Method, Body, Server};
+use hyper::service::make_service_fn;
 use hyper::header::CONTENT_LENGTH;
 use pathmaker::hyper::Router;
 use failure::Error;
+use futures::prelude::*;
 
-fn handler(_: Request<Body>, _: Vec<String>) -> Box<dyn Future<Item = Response<Body>, Error = Error>> {
-    let body = "Hello, world!";
-    Box::new(futures::future::result(
-        Response::builder()
+fn router() -> Router {
+    let mut build = Router::build();
+    build.get("/foo", |_, _| {
+        let body = "Hello, world!";
+        Box::new(futures::future::result(Response::builder()
             .header(CONTENT_LENGTH, body.len() as u64)
             .body(Body::from(body))
             .map_err(Error::from)
-    ))
-}
-
-fn router() -> Router {
-    let build = Router::build()
-    build.get("/foo", handler);
+        ))
+    });
     build.finish()
 }
 
 fn main() {
     let address = "0.0.0.0:8080".parse().unwrap();
-    let server = Server::bind(&addr).serve(router()).map_err(|e| {
-        eprintln!("error: {:?}", e)
-    });
-    hyper::rt::run(server)
+    let server = Server::bind(&address)
+        .serve(make_service_fn(|_| Ok::<_, hyper::Error>(router()))).map_err(|e| {
+            eprintln!("error: {:?}", e);
+        });
+    // hyper::rt::run(server)
 }
 ```
 
@@ -62,10 +62,10 @@ Support for query parameters is allowed by using `{}` in the path:
 
 ```rust
 // ...
-fn router() {
-    let build = Router::build();
+fn router() -> Router {
+    let mut build = Router::build();
     build.get("/foo", handler)
-        .get("/hello/{}", hello_handler);
+         .get("/hello/{}", hello_handler);
     build.finish()
 }
 // ...
@@ -76,7 +76,7 @@ in order to get the result:
 
 ```rust
 //...
-fn hello_handler(_: Request<Body>, params: Vec<String>) -> Box<dyn Future<Item = Response<Body>, Error = Error>> {
+fn hello_handler(_: Request<Body>, params: Vec<String>) -> Box<dyn Future<Item = Response<Body>, Error = Error> + Send> {
     let body = format!("Hello, {}!", params[0]);
     Box::new(futures::future::result(
         Response::builder()
@@ -90,7 +90,7 @@ fn hello_handler(_: Request<Body>, params: Vec<String>) -> Box<dyn Future<Item =
 
 Query parameters can be filtered down by format:
 
-- `{}`, `{:string}` (the default): anything that isn't a `/` character is 
+- `{}`, `{:string}` (the default): anything that isn't a `/` character is
   matched.
 - `{:int}`: a positive or negative number.
 - `{:uint}`: just a number, no sign allowed.

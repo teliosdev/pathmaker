@@ -15,6 +15,9 @@ static MATCH_KINDS: Map<&'static str, &'static str> = phf_map! {
 };
 
 #[derive(Debug, Clone)]
+/// A single route in the router.  This contains information about the path;
+/// specifically, the path itself, the method, the handler, and how to match
+/// it.
 pub struct Route<M, H> {
     pub(super) path: Cow<'static, str>,
     pub(super) method: M,
@@ -23,6 +26,8 @@ pub struct Route<M, H> {
 }
 
 impl<M, H> Route<M, H> {
+    /// Creates a new route with the given information.  The path is parsed,
+    /// and the new route is returned.
     pub fn new<P>(path: P, method: M, handler: H) -> Route<M, H>
     where
         P: Into<Cow<'static, str>>,

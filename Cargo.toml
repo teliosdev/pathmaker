@@ -1,10 +1,12 @@
 [package]
 name = "pathmaker"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jeremy Rodi <me@retroc.at>"]
 edition = "2018"
 description = "a bare-bones http router"
 license = "MIT"
+repository = "https://github.com/medcat/pathmaker"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
